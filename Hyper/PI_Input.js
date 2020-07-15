@@ -10,6 +10,8 @@ Hyper.input.keysDown=[];
 Hyper.input.mprev={x:0,y:0,t:0};
 Hyper.input.mspeed={x:0,y:0};
 
+var controllers = {};
+
 //TODO: check for double click (1st click starts a timer, if 2nd click occurs while timer active)
 Hyper.input.init = function()
 {
@@ -20,33 +22,41 @@ Hyper.input.init = function()
 	scene.screenSpaceCameraController.enableTilt = false;
 	scene.screenSpaceCameraController.enableLook = false;
 	*/
-	
+
 	//setup canvas keyboard interaction
 	viewer.canvas.tabIndex=1000; //setting tabIndex gives canvas the ability to have focus
 	viewer.canvas.onclick = function() {viewer.canvas.focus();} //clicking the canvas gives it focus
 	viewer.canvas.addEventListener("keydown", function(e){Hyper.input.keyDown(e,"canvas");}, false);
-	viewer.canvas.addEventListener("keyup", function(e){Hyper.input.keyUp(e,"canvas");}, false); 
-	viewer.canvas.addEventListener("mousedown", Hyper.input.canvasMouseDown, false); 
-	viewer.canvas.addEventListener("mouseup", Hyper.input.canvasMouseUp, false); 
+	viewer.canvas.addEventListener("keyup", function(e){Hyper.input.keyUp(e,"canvas");}, false);
+	viewer.canvas.addEventListener("mousedown", Hyper.input.canvasMouseDown, false);
+	viewer.canvas.addEventListener("mouseup", Hyper.input.canvasMouseUp, false);
 	viewer.canvas.addEventListener("mousemove", Hyper.input.canvasMouseMove, false);
 	viewer.canvas.addEventListener('DOMMouseScroll', Hyper.input.canvasMouseWheel, false);
 	viewer.canvas.addEventListener('mousewheel', Hyper.input.canvasMouseWheel, false);
-	
+
 	//setup timeline interaction
 	viewer.timeline._timeBarEle.tabIndex=1001;
 	viewer.timeline._timeBarEle.onclick = function() {viewer.timeline._timeBarEle.focus();}
-	viewer.timeline._timeBarEle.addEventListener("keydown", function(e){Hyper.input.keyDown(e,"timeline");}, false); 
-	viewer.timeline._timeBarEle.addEventListener("keyup", function(e){Hyper.input.keyUp(e,"timeline");}, false); 
+	viewer.timeline._timeBarEle.addEventListener("keydown", function(e){Hyper.input.keyDown(e,"timeline");}, false);
+	viewer.timeline._timeBarEle.addEventListener("keyup", function(e){Hyper.input.keyUp(e,"timeline");}, false);
 	//createMouseWheelCallback in Timeline.js
 	//JulianDate.secondsDifference in JulianDate.js
-	
+
 	//3DMice setup
-	Hyper.input.waitForConnection();
-	
+	//Hyper.input.waitForConnection();
+
+    //if (haveEvents) {  // determine what browser, set haveEvents accordingly
+      window.addEventListener("gamepadconnected", connecthandler);
+      //window.addEventListener("gamepaddisconnected", disconnecthandler);
+    //} else if (haveWebkitEvents) {
+    //  window.addEventListener("webkitgamepadconnected", connecthandler);
+    //  window.addEventListener("webkitgamepaddisconnected", disconnecthandler);
+    //}
+
 	//viewer.clock.multiplier	//sim speed
 	//viewer.clock.currentTime	//sim time
 	//shuttleRing
-	
+
 	//viewer.timeline._topDiv
 	//viewer.timeline._timeBarEle //graphic
 	//viewer.timeline._startJulian.dayNumber
@@ -69,7 +79,9 @@ Hyper.input.waitForConnection = function()
 	{
 		var i=0;while(i<navigator.getGamepads().length-1)//freezes on the last entry
 		{
+            console.log(navigator.getGamepads()[i]);
 			//if(navigator.getGamepads()[i]===undefined){continue;}
+            if (navigator.getGamepads()[i]!==null){
 			if(navigator.getGamepads()[i].axes.length==6)
 			{
 				console.log("connecting "+navigator.getGamepads()[i].id);
@@ -77,10 +89,29 @@ Hyper.input.waitForConnection = function()
 				device:i,showRaw:false,maxInput:1,deadZones:[0.01,0.01,0.01,0.01,0.01,0.01],
 				scales:[1,-1,-1,-1,1,1]});
 			}
+            }
 			i+=1;
 		}
 	}
 }
+function connecthandler(e) {
+  addgamepad(e.gamepad);
+}
+function addgamepad(gamepad) {
+  controllers[gamepad.index] = gamepad;
+  if(gamepad.axes.length==6)
+  {
+      console.log("connecting "+gamepad.id);
+      Hyper.input.controllers.push({
+      device:gamepad.index,showRaw:false,maxInput:1,deadZones:[0.01,0.01,0.01,0.01,0.01,0.01],
+      scales:[1,-1,-1,-1,1,1]});
+  }
+
+  //t.appendChild(document.createTextNode("gamepad: " + gamepad.id));
+  //for (i=0; i<gamepad.axes.length; i++) {
+  //rAF(updateStatus);
+}
+
 Hyper.input.callAction = function(code,source)	//TODO: move to PI_inputBind.js
 {
 	var hs=Hyper.SpaceNav;
@@ -98,10 +129,10 @@ Hyper.input.keyDown = function(e,source)
 {
 	e = e || window.event; //for IE9
 	//e.keyCode, e.altKey, e.ctrlKey, e.shiftKey
-	
+
 	//trigger functions
 	Hyper.input.callAction(e.keyCode,source);
-	
+
 	//update keysDown list
 	var hik=Hyper.input.keysDown;
 	var present=0;
@@ -117,7 +148,7 @@ Hyper.input.keyUp = function(e,source)
 {
 	e = e || window.event; //for IE9
 	//e.keyCode, e.altKey, e.ctrlKey, e.shiftKey
-	
+
 	//update keysDown list
 	var hik=Hyper.input.keysDown;
 	var i=0;while(i<hik.length)
@@ -164,7 +195,7 @@ Hyper.input.canvasMouseWheel = function(e)
 	//console.log("mousewheel");
 }
 Hyper.input.getInput = function(controller)
-{	
+{
 	//2DMouse
 	var t=new Date().getTime();
 	if(t>Hyper.input.mprev.t+100){Hyper.input.mspeed={x:0,y:0};}//no recent input so make it zero
@@ -177,11 +208,11 @@ Hyper.input.getInput = function(controller)
 	{
 		//get input
 		mp[i]=gp.axes[i];
-		
+
 		//unitize it (fix for older browsers which got the wrong max input)
-		if(Math.abs(mp[i])>con.maxInput){con.maxInput=Math.abs(mp[i]);} //determine true maxInput 
+		if(Math.abs(mp[i])>con.maxInput){con.maxInput=Math.abs(mp[i]);} //determine true maxInput
 		mp[i]/=con.maxInput; //convert to -1 to +1
-		
+
 		//deal with deadzone
 		if(Math.abs(mp[i])<con.deadZones[i]){mp[i]=0.0;}
 		else
@@ -193,7 +224,7 @@ Hyper.input.getInput = function(controller)
 		}
 
 		//scale (do this last, might want to curve instead, otherwise partial input could cause max output)
-		mp[i]*=con.scales[i]; 
+		mp[i]*=con.scales[i];
 		i+=1;
 	}
 	return mp;

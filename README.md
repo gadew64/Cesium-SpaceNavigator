@@ -1,13 +1,10 @@
-UPDATE: I haven't touched this in over 4 years and just noticed that it didn't work on new browsers, I got it working again just by altering a few lines (gamepad object detection) and will update on GitHub eventually. For now here's a video collection using a SpaceNavigator with Cesium:
-
-https://www.youtube.com/playlist?list=PLu7ubzox5Ny6JIhF_tfsOuCMDtsro6ENh
-
+OP had notice about pending updates for a while.  Forked and worked-in code for the latest Gamepad API.  Needs more work, but can fly again. Haven't gone-thru readme beyond this point.<br /> <br /> 
 Navigate through Space at warp speed, orbit planets, fly over terrain, or take a relaxing stroll through a park.<br />
 <br />
 Be sure to include PI_Manager.js in your app. Place all .js files into the same directory. Be sure to set Hyper.scriptLoader.baseURL in PI_Manager.js accordingly.
 <br />
 <br />
-NEW keyboard support! Click 3DWindow to activate. Where do you place your fingers? On the home keys http://en.wikipedia.org/wiki/Touch_typing <br />
+Keyboard support! Click 3DWindow to activate. Where do you place your fingers? On the home keys http://en.wikipedia.org/wiki/Touch_typing <br />
 continuous keys<br />
 s-f left-right<br />
 e-d forward-back<br />
